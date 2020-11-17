@@ -1,0 +1,4 @@
+key = term_id;
+data = frequency
+value= freq
+
