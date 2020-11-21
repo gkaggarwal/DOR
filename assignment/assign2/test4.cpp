@@ -109,14 +109,17 @@ void display_posting(Hashnode* item1)
  cout<<"\nTotal documents="<<(i+1)<<endl;
 }
 //-------------------------------------------------------------------------------------------------
-void merge(long int* A,long int* B)
-{ int i=0,j=0;
-  
+long int* merge(long int* A,long int* B)
+{ int i=0,j=0,count=0;
+  long int *c;
+  c=(long int*)calloc(8000,sizeof(int));
   while(*(A+i) !=0 && *(B+j) !=0)
   {
      if(*(A+i)==*(B+j))
      {
-     cout<<(*(A+i))<<",";
+     //cout<<(*(A+i))<<",";
+     c[count]=(*(A+i));
+     count++;
      i++;
      j++;
      }
@@ -125,6 +128,8 @@ void merge(long int* A,long int* B)
      else
      j++;
   }
+  //cout<<endl;
+  return c;
 }
 //-------------------------------------------------------------------------------------------------
 int main()
@@ -138,22 +143,32 @@ int main()
     string A[100];
     char s1[100];
     cout<<"Enter Query:";
+    int query_type=0;
     fgets(s1,100,stdin);
     s=s1;
     std::string delimiter = " AND ";
+    std::string delimiter1 = " OR ";
     int k=1;
     size_t pos = 0;
     std::string token;
     while ((pos = s.find(delimiter)) != std::string::npos) {
     token = s.substr(0, pos);
-    
+    query_type=1;
     A[k++]=token;
     
     s.erase(0, pos + delimiter.length());
    }
+   while ((pos = s.find(delimiter1)) != std::string::npos) {
+    token = s.substr(0, pos);
+    query_type=2;
+    A[k++]=token;
+    
+    s.erase(0, pos + delimiter1.length());
+   }
    pos = s.find("\n");  // Deleteing newline character at the end of input string
    s.erase(pos,pos+1);
     A[k]=s;
+    cout<<"Query: "<<query_type<<endl;
     for(int i=1;i<=k;i++)
     {
     cout<<A[i]<<i<<endl;
@@ -205,9 +220,10 @@ int main()
       
     }
     }
-    int p=1;
+//---------------------------------------------------------------------------------------------------
+    int p=1,g;
     long int* R[k];
-    
+    g=k;
  while(k)
  {   int switch_case=1;
      //cout<<"press 1 for search"<<endl;
@@ -238,12 +254,16 @@ int main()
        
        }
        Hashnode* item2=Search(search_term_id);
-       cout<<"posting list of "<<A[p]<<endl;
+       //cout<<"posting list of "<<A[p]<<endl;
        R[p]=item2->posting;
        p++;
        k--;
-       display_posting(item2);
+       if(query_type ==2)
+       {cout<<"posting list of "<<A[p]<<endl;
+        display_posting(item2);
       cout<<"search term id : "<<search_term_id<<endl;
+       }
+      
        
      }
     else
@@ -252,7 +272,23 @@ int main()
        free(HashMap[TABLE_SIZE]);
        }
 }
-merge(R[1],R[2]);
+
+if(query_type ==1)
+{
+int m=0,n=1;
+while(n<g)
+{
+ R[1]=merge(R[1],R[1+n]);
+ n++;
+}
+cout<<"Both words present in:"<<endl;
+while(*(R[1]+m)!=0)
+{
+cout<<*(R[1]+m)<<",";
+m++;
+}
+cout<<endl;
+}
 free(HashMap[TABLE_SIZE]);
        
 return 0;
