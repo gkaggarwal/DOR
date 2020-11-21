@@ -109,7 +109,24 @@ void display_posting(Hashnode* item1)
  cout<<"\nTotal documents="<<(i+1)<<endl;
 }
 //-------------------------------------------------------------------------------------------------
-
+void merge(long int* A,long int* B)
+{ int i=0,j=0;
+  
+  while(*(A+i) !=0 && *(B+j) !=0)
+  {
+     if(*(A+i)==*(B+j))
+     {
+     cout<<(*(A+i))<<",";
+     i++;
+     j++;
+     }
+     else if(*(A+i)< *(B+j))
+     i++;
+     else
+     j++;
+  }
+}
+//-------------------------------------------------------------------------------------------------
 int main()
 {
   fstream file1,file2;
@@ -189,6 +206,7 @@ int main()
     }
     }
     int p=1;
+    long int* R[k];
     
  while(k)
  {   int switch_case=1;
@@ -221,6 +239,7 @@ int main()
        }
        Hashnode* item2=Search(search_term_id);
        cout<<"posting list of "<<A[p]<<endl;
+       R[p]=item2->posting;
        p++;
        k--;
        display_posting(item2);
@@ -233,6 +252,7 @@ int main()
        free(HashMap[TABLE_SIZE]);
        }
 }
+merge(R[1],R[2]);
 free(HashMap[TABLE_SIZE]);
        
 return 0;
