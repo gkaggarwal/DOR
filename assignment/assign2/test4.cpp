@@ -18,7 +18,9 @@ struct Hashnode* HashMap[TABLE_SIZE];
 static long int counter_insert; //counter for insertion
 static long int counter_delete;
 static long int counter_search;
-
+static int n;
+string word[50];
+    
 long int HashIndex(long int term_id) {
    return term_id % TABLE_SIZE;
 }
@@ -92,19 +94,7 @@ struct Hashnode* Search(long int term_id)
 }
 
 //-----------------------------------------------------------------------------------------------
-void display_posting(Hashnode* item1)
-{
- long int *p;
- p=item1->posting;
- int i=0;
- while( i<8000 && *(p+i)!=0 )
- {
- cout<<*(p+i)<<",";
- i++;
- }
- cout<<"\nTotal documents="<<(i+1)<<endl;
-}
-//-------------------------------------------------------------------------------------------------
+
 long int* merge(long int* A,long int* B)
 { int i=0,j=0,count=0;
   long int *c;
@@ -126,13 +116,130 @@ long int* merge(long int* A,long int* B)
   return c;
 }
 //-------------------------------------------------------------------------------------------------
+void divide(string inputString)
+{ 
+stringstream stringStream(inputString);
+string line;
+//static int i;
+std::string delimiter1 = " OR ";
+std::string delimiter2 = " AND ";
+std::string delimiter3 = "NOT ";
+string token;
+std::getline(stringStream, line);
+string s1,s2,s3,p1,p2,p3;
+    std::size_t prev = 0, pos,pos1,pos2;
+    if ((pos = line.find(delimiter1, prev)) != std::string::npos)
+    {
+           
+           
+            p1 = line.substr(pos+delimiter1.length(),line.length());
+          //  divide(p1);
+            s1 = line.substr(prev, pos-prev);       
+            //divide(s1);
+            if(s1.length() > p1.length())
+                  {divide(s1);
+                  divide(p1);
+                  }
+               else
+                  {divide(p1);
+                  divide(s1);
+                  }
+
+            // cout<<"OR"<<endl;
+             word[n++]="OR";
+    }
+    else if((pos1 = line.find(delimiter2, prev)) != std::string::npos)
+            {
+                  
+              p2 = line.substr(pos1+delimiter2.length(),line.length());
+              s2 = line.substr(prev, pos1-prev);
+              
+               if(s2.length() > p2.length())
+                  {divide(s2);
+                  divide(p2);
+                  }
+               else
+                  {divide(p2);
+                  divide(s2);
+                  }
+              //cout<<"AND "<<endl;
+              word[n++]="AND";
+            }
+    else if((pos2 = line.find(delimiter3, prev)) != std::string::npos)
+            {
+              p3 = line.substr(pos2+delimiter3.length(),line.length());
+               //cout<<"s3="<<s3<<endl;
+               divide(p3);
+               word[n++]="NOT";
+          //    cout<<"NOT "<<line<<endl;
+            }           
+               
+     else
+      { word[n++]=line;
+      //cout<<line<<endl;     
+      }  
+
+}
+
+//-------------------------------------------------------------------------------------------------
+long int* add(long int* A,long int* B)
+{ int i=0,j=0,count=0;
+  long int *c;
+  c=(long int*)calloc(16000,sizeof(int));
+  while(*(A+i) !=0)
+  {
+       c[count]=(*(A+i));  //cout<<(*(A+i))<<",";
+       count++;
+       i++;
+     
+  }
+  while(*(B+j) !=0)
+  {
+       c[count]=(*(B+j));  //cout<<(*(B+i))<<",";
+       count++;
+       j++;
+     
+  }
+  return c;
+}
+//-------------------------------------------------------------------------------------------------
+long int * posting_ret(string search_word)
+{      fstream file2;
+        string filename2,word2,word3;
+        filename2 = "vocab.dat";
+        long int search_term_id=0;  //cin>>search_word; 
+         file2.open(filename2.c_str(),ios::in);
+       while ( file2 >> word2)
+       {
+           file2 >> word3;
+           if ( search_word != word2)
+           {
+           }
+           else
+           { std::istringstream term (word3);
+              term >> search_term_id;
+              file2.close();
+              break;
+              
+           }
+       
+       }
+       if(search_term_id !=0)
+       {
+         Hashnode* item2=Search(search_term_id);//cout<<"posting list of "<<A[p]<<endl;
+         return (item2->posting);
+       }
+}
+
+//------------------------------------------------------------------------------------------------
+
 int main()
 {
   fstream file1,file2;
     string word1_doc,word1_string,word1_freq,word2,word3, filename1,filename2; 
     filename1 = "dict0.dat"; 
     filename2 = "vocab.dat";
-    //-----------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------
     file1.open(filename1.c_str(),ios::in);  
     while( file1 >> word1_doc)
     {  long int term_id=0;
@@ -180,111 +287,60 @@ while(1)
     
  if(case1==1)
  {   
-    string s ;
+    string inputString,s2;
     string A[100];
     char s1[100];
     fgets(s1,100,stdin);
     cout<<"Enter Query:";
-    int query_type=0;
+    int and_query_type=0,or_query_type=0,not_query_type=0,and_operation=0,or_operation=0;
     fgets(s1,100,stdin);
-    s=s1;
-    std::string delimiter = " AND ";
-    std::string delimiter1 = " OR ";
-    std::string delimiter2 = "NOT ";
-    int k=1;
-    size_t pos = 0;
-    std::string token;
-    while ((pos = s.find(delimiter)) != std::string::npos) {
-    token = s.substr(0, pos);
-    query_type=1;
-    A[k++]=token;
+    inputString=s1;
+    n=0;
+    divide(inputString);
+    int p=0,q=0;
+    long int* P[15];
+    while(word[p]!="")
+    {
+        if(word[p]=="NOT")
+        { 
+         //P[q-1]=inverse(P[q-1];
+         p++;
+        }
+        else if(word[p]=="AND")
+        {
+          P[q-2]= merge(P[q-1],P[q-2]);
+           p++;
+           q--;
+        }
+        else if(word[p]=="OR")
+        {
+          P[q-2]=add(P[q-1],P[q-2]);
+          p++;
+          q--;
+        }
+        else
+        {
+         P[q]=posting_ret(word[p]);
+         p++;
+         q++;
+        }
     
-    s.erase(0, pos + delimiter.length());
-   }
-   while ((pos = s.find(delimiter1)) != std::string::npos) {
-    token = s.substr(0, pos);
-    query_type=2;
-    A[k++]=token;
-    
-    s.erase(0, pos + delimiter1.length());
-   }
-   while ((pos = s.find(delimiter2)) != std::string::npos) {
-    if(pos ==0)
-    { s.erase(0, delimiter2.length());
-      query_type=3;
     }
-    }
-   
-   pos = s.find("\n");  // Deleteing newline character at the end of input string
-   s.erase(pos,pos+1);
-    A[k]=s;
-    cout<<"Query: "<<query_type<<endl;
-    for(int i=1;i<=k;i++)
+    int t=0;
+    cout<<"Documents which have both words after Query :"<<endl;
+    while(*(P[0]+t)!=0)
     {
-    cout<<A[i]<<i<<endl;
-    }
-    cout<<"k="<<k<<endl;
-//---------------------------------------------------------------------
-  
-    int p=1,g;
-    long int* R[k];
-    g=k;
- while(k)
- {    
-         string search_word;       //  cout<<"Enter word for search:";
-         long int search_term_id=0;  //cin>>search_word; 
-         search_word= A[p];
-         file2.open(filename2.c_str(),ios::in);
-       while ( file2 >> word2)
-       {
-           file2 >> word3;
-           if ( search_word != word2)
-           {
-           }
-           else
-           { std::istringstream term (word3);
-              term >> search_term_id;
-              file2.close();
-              break;
-              
-           }
-       
-       }
-       Hashnode* item2=Search(search_term_id);//cout<<"posting list of "<<A[p]<<endl;
-       R[p]=item2->posting;
-       p++;
-       k--;
-       if(query_type ==2)
-       {cout<<"posting list of "<<A[p]<<endl; // print all posting list for OR operation
-        display_posting(item2);
-      cout<<"search term id : "<<search_term_id<<endl;
-       }
-      }
-if(query_type ==1)
-{
-    int m=0,n=1;
-    while(n<g)
-    {
-      R[1]=merge(R[1],R[1+n]);   // To merge multiple posting list for AND operation
-      n++;
-    }
-    cout<<"Both words present in:"<<endl;
-    while(*(R[1]+m)!=0)
-    {
-      cout<<*(R[1]+m)<<",";
-      m++;
+      cout<<*(P[0]+t)<<",";
+      t++;
     }
     cout<<endl;
-}
-}
-else
-{
-  
-free(HashMap[TABLE_SIZE]);     
-return 0;
-}
 
+    
+ }
+ else
+ {
+    //free(HashMap[TABLE_SIZE]);     
+    return 0; 
+ }
 }
 }
-
-
