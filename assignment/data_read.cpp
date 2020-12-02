@@ -9,10 +9,10 @@ static long int term_id;
 int main() 
 { 
     
-    fstream file[5],file1,file_t1,file_t2,file_t3,file6;
+    fstream file[5],file1,file_t1,file_t2,file_t3,file6,file7;
     fstream file_c;
     int i =0; 
-    string word,word1,word2,word3,word4,word5, t, q, filename[5],filename1[5],filename3,filename4,filename5,filename6; 
+    string word,word1,word2,word3,word4,word5, word7,t, q, filename[5],filename1[5],filename3,filename4,filename5,filename6,filename7; 
     filename[0] = "lyrl2004_tokens_train.dat"; 
     filename[1] = "lyrl2004_tokens_test_pt0.dat"; 
     filename[2] = "lyrl2004_tokens_test_pt1.dat"; 
@@ -29,7 +29,7 @@ int main()
     filename4 = "t2.dat";
     filename5 = "t3.dat";
     filename6 = "vocab.dat";
-     
+    filename7 = "Doc_list";
     while(i<5)
     {
     file1.open(filename1[i].c_str(),ios::app); 
@@ -42,6 +42,25 @@ int main()
           long int term=0 ;
            iss >> term;
            file[i] >> word1;
+          int doc_flag=0;
+           file7.open(filename7.c_str(),ios::in);
+           while( file7 >> word7)
+           {
+              if(word7 != word)
+              {
+              }
+              else
+              {
+               doc_flag=1;
+               break;
+              }
+           }
+           file7.close();
+           file7.open(filename7.c_str(),ios::app);
+           if(doc_flag==0)
+           {
+            file7 << word<<"\n";
+           }
         file_t1.open(filename3.c_str(),ios::out | ios::trunc); 
         file_t2.open(filename4.c_str(),ios::out | ios::trunc); 
     //    file_t3.open(filename5.c_str(),ios::app);

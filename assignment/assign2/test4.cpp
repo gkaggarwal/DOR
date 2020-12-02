@@ -35,7 +35,7 @@ void Insert(long int term_id,long int freq, long int doc_id,int check=0,Hashnode
    item->frequency=freq;
    item->term_id=term_id;
    
-   (item->posting)=(long int*)calloc(8000,sizeof(int));
+   (item->posting)=(long int*)calloc(8000,sizeof(long int));
    long int h_index=HashIndex(term_id);
    
    while(HashMap[h_index]!=NULL && HashMap[h_index]->term_id!=-1)
@@ -50,8 +50,8 @@ void Insert(long int term_id,long int freq, long int doc_id,int check=0,Hashnode
    if(counter==TABLE_SIZE)
    cout<<"No space available to insert\n";
    else
-   { 
-     *(item->posting)=doc_id;
+   { *(item->posting)=1;//Document frequency
+     *(item->posting+1)=doc_id;
      HashMap[h_index]=item;
      counter_insert++;
    }
@@ -66,6 +66,7 @@ void Insert(long int term_id,long int freq, long int doc_id,int check=0,Hashnode
    }
    if(i<8000)
    {
+    (*(item1->posting))+=1; 
    (*(item1->posting+i))=doc_id;
    }
    }
@@ -98,7 +99,7 @@ struct Hashnode* Search(long int term_id)
 long int* merge(long int* A,long int* B)
 { int i=0,j=0,count=0;
   long int *c;
-  c=(long int*)calloc(8000,sizeof(int));
+  c=(long int*)calloc(8000,sizeof(long int));
   while(*(A+i) !=0 && *(B+j) !=0)
   {
      if(*(A+i)==*(B+j))
@@ -185,7 +186,7 @@ string s1,s2,s3,p1,p2,p3;
 long int* add(long int* A,long int* B)
 { int i=0,j=0,count=0;
   long int *c;
-  c=(long int*)calloc(16000,sizeof(int));
+  c=(long int*)calloc(16000,sizeof(long int));
   while(*(A+i) !=0)
   {
        c[count]=(*(A+i));  //cout<<(*(A+i))<<",";
@@ -201,6 +202,45 @@ long int* add(long int* A,long int* B)
      
   }
   return c;
+}
+//-------------------------------------------------------------------------------------------------
+long int* inverse(long int* A)
+{
+       long int *c;
+       long int count=0;
+       c=(long int*)calloc(810257,sizeof(long int));
+  
+       fstream file;
+       string filename;
+       long int word;
+       filename ="Doc_list.dat";
+       file.open("Doc_list.dat",ios::in);
+       
+       while(file >> word)
+        {
+           //cout<<"Doc"<<word<<endl;
+          
+           int i=1,match=0;
+          while(*(A+i)!=0 && i<8000)
+          { 
+           if(word != *(A+i))
+           {
+            i++;
+           }
+           else
+           {
+            match=1;
+            break;
+           }
+        }
+          
+          if(match==0 && count<810257)
+          { 
+           c[count]=word;
+           count++;
+          }
+        }
+        return c;
 }
 //-------------------------------------------------------------------------------------------------
 long int * posting_ret(string search_word)
@@ -291,8 +331,13 @@ while(1)
     
     
  if(case1==1)
- {   
-    string inputString,s2;
+ {  
+  int case2;
+  cout<<"Press 1 For Boolean Query\n"<<"Press 2 For Phrase Query"<<endl;    
+  cin>>case2;
+  if(case2==1)
+   {  
+    string inputString,s2 ;                //Boolean Query
     string A[100];
     char s1[100];
     fgets(s1,100,stdin);
@@ -308,7 +353,7 @@ while(1)
     {
         if(word[p]=="NOT")
         { 
-         //P[q-1]=inverse(P[q-1];
+         P[q-1]=inverse(P[q-1]);
          p++;
         }
         else if(word[p]=="AND")
@@ -345,7 +390,12 @@ while(1)
     }
     cout<<endl;
 
+    }
+    else
+    {
+           //Phrase Query
     
+    }
  }
  else
  {
