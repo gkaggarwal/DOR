@@ -8,7 +8,7 @@ using namespace std;
 const long int TABLE_SIZE = 100000;
 const long int Total_operation = 5000;
 const long int Total_value=100000;
-const long int P_size=10000;
+
 struct Hashnode
 { long int frequency;
   long int term_id;
@@ -35,7 +35,7 @@ void Insert(long int term_id,long int freq, long int doc_id,int check=0,Hashnode
    item->frequency=freq;
    item->term_id=term_id;
    
-   (item->posting)=(long int*)calloc(P_size,sizeof(long int));
+   (item->posting)=(long int*)calloc(8000,sizeof(long int));
    long int h_index=HashIndex(term_id);
    
    while(HashMap[h_index]!=NULL && HashMap[h_index]->term_id!=-1)
@@ -60,11 +60,11 @@ void Insert(long int term_id,long int freq, long int doc_id,int check=0,Hashnode
    {
    item1->frequency+=freq;
    long int i=0;
-   while(i<P_size && *(item1->posting+i)!=0)
+   while(i<8000 && *(item1->posting+i)!=0)
    {
     i++;
    }
-   if(i<P_size)
+   if(i<8000)
    {
     (*(item1->posting))+=1; 
    (*(item1->posting+i))=doc_id;
@@ -99,7 +99,7 @@ struct Hashnode* Search(long int term_id)
 long int* merge(long int* A,long int* B)
 { int i=0,j=0,count=0;
   long int *c;
-  c=(long int*)calloc(P_size,sizeof(long int));
+  c=(long int*)calloc(8000,sizeof(long int));
   while(*(A+i) !=0 && *(B+j) !=0)
   {
      if(*(A+i)==*(B+j))
@@ -186,7 +186,7 @@ string s1,s2,s3,p1,p2,p3;
 long int* add(long int* A,long int* B)
 { int i=0,j=0,count=0;
   long int *c;
-  c=(long int*)calloc(2*P_size,sizeof(long int));
+  c=(long int*)calloc(16000,sizeof(long int));
   while(*(A+i) !=0)
   {
        c[count]=(*(A+i));  //cout<<(*(A+i))<<",";
@@ -221,7 +221,7 @@ long int* inverse(long int* A)
            //cout<<"Doc"<<word<<endl;
           
            int i=1,match=0;
-          while(*(A+i)!=0 && i<P_size)
+          while(*(A+i)!=0 && i<8000)
           { 
            if(word != *(A+i))
            {
@@ -277,32 +277,6 @@ long int * posting_ret(string search_word)
 }
 
 //------------------------------------------------------------------------------------------------
-void parse(string inputString)
-{
-stringstream stringStream(inputString);
-string line,wordp;
-while(std::getline(stringStream, line)) 
-{   int c=0;
-    std::size_t prev = 0, pos;
-    while ((pos = line.find_first_of(" ", prev)) != std::string::npos)
-    {
-        if (pos > prev)
-            {
-            wordp = line.substr(prev, pos-prev);
-             if(wordp!= "at" && wordp!= "and" && wordp!= "a" && wordp!= "an" && wordp!= "on" && wordp!= "by" && wordp!= "also" && wordp!= "also" && wordp!= "am" && wordp!= "any" && wordp!= "are"  && wordp!= "as" && wordp!= "be" && wordp!= "been" && wordp!= "but" && wordp!= "can" && wordp!= "cannot" && wordp!= "could" && wordp!= "did" && wordp!= "do" && wordp!= "does" && wordp!= "either" && wordp!= "else" && wordp!= "ever" && wordp!= "for" && wordp!= "from" && wordp!= "had" && wordp!= "has" && wordp!= "have" && wordp!= "her" && wordp!= "him" && wordp!= "how" && wordp!= "however" && wordp!= "i" && wordp!= "if" && wordp!= "in" && wordp!= "into" && wordp!= "is" && wordp!= "its" && wordp!= "it" && wordp!= "just" && wordp!= "least" && wordp!= "let" && wordp!= "may" && wordp!= "me" && wordp!= "might" && wordp!= "my" && wordp!= "no" && wordp!= "nor" && wordp!= "off" && wordp!= "of" && wordp!= "other" && wordp!= "our" && wordp!= "so" && wordp!= "than" && wordp!= "that" && wordp!= "there" && wordp!= "their" && wordp!= "them" && wordp!= "these" && wordp!= "they" && wordp!= "this" && wordp!= "to" && wordp!= "too" && wordp!= "us" && wordp!= "was" && wordp!= "we" && wordp!= "were" && wordp!= "what" && wordp!= "when" && wordp!= "when" && wordp!= "where" && wordp!= "which" && wordp!= "while" && wordp!= "who" && wordp!= "whom" && wordp!= "why" && wordp!= "yet" && wordp!= "you" && wordp!= "your")
-         //   cout<<wordp<<endl;
-            word[c++]=wordp;
-            }
-        prev = pos+1;
-    }
-    if (prev < line.length())
-      {wordp = line.substr(prev, line.length()-prev);
-            //cout<<wordp<<endl;
-            word[c]=wordp;
-            }  
-}  
-}
-//-------------------------------------------------------------------------------------------------
 
 int main()
 {
@@ -419,35 +393,7 @@ while(1)
     }
     else
     {
-         string inputString,s2 ;                //Phrase Query
-         string A[100];
-         char s1[100];
-         fgets(s1,100,stdin);
-         cout<<"Enter Query:";
-         fgets(s1,100,stdin);
-         inputString=s1;
-         parse(inputString);
-         int f=1;
-         long int *P[2];
-         if(word[0]!="")
-         P[0]=posting_ret(word[0]);
-         
-         while(word[f]!="")
-         {
-            P[1]=posting_ret(word[f]);
-            f++;
-            P[0]=merge(P[0],P[1]);
-         }
-         
-         int t=0;
-         cout<<"Documents retrieve after Query :"<<endl;
-         while(*(P[0]+t)!=0)
-         {
-            cout<<*(P[0]+t)<<",";
-             t++;
-         }
-         cout<<endl;
-                                                     
+           //Phrase Query
     
     }
  }
