@@ -12,7 +12,7 @@ const long int P_size=10000;
 struct Hashnode
 { long int frequency;
   long int term_id;
-  long int *posting;
+  pair<long int,long int> *posting;
 };
 struct Hashnode* HashMap[TABLE_SIZE];
 static long int counter_insert; //counter for insertion
@@ -35,7 +35,7 @@ void Insert(long int term_id,long int freq, long int doc_id,int check=0,Hashnode
    item->frequency=freq;
    item->term_id=term_id;
    
-   (item->posting)=(long int*)calloc(P_size,sizeof(long int));
+   (item->posting)=(pair<long int,long int>*)calloc(P_size,sizeof(pair<long int,long int>));
    long int h_index=HashIndex(term_id);
    
    while(HashMap[h_index]!=NULL && HashMap[h_index]->term_id!=-1)
@@ -50,8 +50,9 @@ void Insert(long int term_id,long int freq, long int doc_id,int check=0,Hashnode
    if(counter==TABLE_SIZE)
    cout<<"No space available to insert\n";
    else
-   { *(item->posting)=1;//Document frequency
-     *(item->posting+1)=doc_id;
+   { (*(item->posting)).first=1;//Document frequency
+     (*(item->posting+1)).first=doc_id;
+     (*(item->posting+1)).second=freq;
      HashMap[h_index]=item;
      counter_insert++;
    }
@@ -60,14 +61,15 @@ void Insert(long int term_id,long int freq, long int doc_id,int check=0,Hashnode
    {
    item1->frequency+=freq;
    long int i=0;
-   while(i<P_size && *(item1->posting+i)!=0)
+   while(i<P_size && (*(item1->posting+i)).first!=0)
    {
     i++;
    }
    if(i<P_size)
    {
-    (*(item1->posting))+=1; 
-   (*(item1->posting+i))=doc_id;
+    ((*(item1->posting)).first)+=1; 
+   ((*(item1->posting+i)).first)=doc_id;
+   ((*(item1->posting+i)).second)=freq;
    }
    }
 }
@@ -96,20 +98,21 @@ struct Hashnode* Search(long int term_id)
 
 //-----------------------------------------------------------------------------------------------
 
-long int* merge(long int* A,long int* B)
+pair<long int,long int>* merge(pair<long int,long int> *A,pair<long int,long int> *B)
 { int i=0,j=0,count=0;
-  long int *c;
-  c=(long int*)calloc(P_size,sizeof(long int));
-  while(*(A+i) !=0 && *(B+j) !=0)
+  pair<long int,long int> *c;
+  c=(pair<long int,long int> *)calloc(P_size,sizeof(pair<long int,long int> *));
+  while((*(A+i)).first !=0 && (*(B+j)).first !=0)
   {
-     if(*(A+i)==*(B+j))
+     if((*(A+i)).first ==( *(B+j)).first)
      {
-     c[count]=(*(A+i));  //cout<<(*(A+i))<<",";
+     c[count].first=(*(A+i)).first;  //cout<<(*(A+i))<<",";
+      c[count].second=(*(A+i)).second;
      count++;
      i++;
      j++;
      }
-     else if(*(A+i)< *(B+j))
+     else if((*(A+i)).first< (*(B+j)).first)
      i++;
      else
      j++;
@@ -183,20 +186,22 @@ string s1,s2,s3,p1,p2,p3;
 }
 
 //-------------------------------------------------------------------------------------------------
-long int* add(long int* A,long int* B)
+pair<long int,long int>* add(pair<long int,long int>* A,pair<long int,long int>* B)
 { int i=0,j=0,count=0;
-  long int *c;
-  c=(long int*)calloc(2*P_size,sizeof(long int));
-  while(*(A+i) !=0)
+  pair<long int,long int> *c;
+  c=(pair<long int,long int>*)calloc(2*P_size,sizeof(pair<long int,long int>*));
+  while((*(A+i)).first !=0)
   {
-       c[count]=(*(A+i));  //cout<<(*(A+i))<<",";
+       c[count].first=(*(A+i)).first;  //cout<<(*(A+i))<<",";
+       c[count].second=(*(A+i)).second;
        count++;
        i++;
      
   }
-  while(*(B+j) !=0)
+  while((*(B+j)).first !=0)
   {
-       c[count]=(*(B+j));  //cout<<(*(B+i))<<",";
+       c[count].first=(*(B+j)).first;  //cout<<(*(B+i))<<",";
+       c[count].second=(*(B+j)).second;
        count++;
        j++;
      
@@ -204,11 +209,11 @@ long int* add(long int* A,long int* B)
   return c;
 }
 //-------------------------------------------------------------------------------------------------
-long int* inverse(long int* A)
+pair<long int,long int>* inverse(pair<long int,long int>* A)
 {
-       long int *c;
+       pair<long int,long int> *c;
        long int count=0;
-       c=(long int*)calloc(810257,sizeof(long int));
+       c=(pair<long int,long int>*)calloc(810257,sizeof(pair<long int,long int>*));
   
        fstream file;
        string filename;
@@ -221,9 +226,9 @@ long int* inverse(long int* A)
            //cout<<"Doc"<<word<<endl;
           
            int i=1,match=0;
-          while(*(A+i)!=0 && i<P_size)
+          while((*(A+i)).first!=0 && i<P_size)
           { 
-           if(word != *(A+i))
+           if(word != (*(A+i)).first)
            {
             i++;
            }
@@ -236,14 +241,15 @@ long int* inverse(long int* A)
           
           if(match==0 && count<810257)
           { 
-           c[count]=word;
+           c[count].first=(*(A+i)).first;
+           c[count].second=(*(A+i)).second;
            count++;
           }
         }
         return c;
 }
 //-------------------------------------------------------------------------------------------------
-long int * posting_ret(string search_word)
+pair<long int,long int>* posting_ret(string search_word)
 {      fstream file2;
         string filename2,word2,word3;
         filename2 = "vocab.dat";
@@ -277,6 +283,8 @@ long int * posting_ret(string search_word)
 }
 
 //------------------------------------------------------------------------------------------------
+
+
 void parse(string inputString)
 {
 stringstream stringStream(inputString);
@@ -302,6 +310,7 @@ while(std::getline(stringStream, line))
             }  
 }  
 }
+
 //-------------------------------------------------------------------------------------------------
 
 int main()
@@ -354,10 +363,14 @@ while(1)
     int case1;
     cout<<"Press 1 For Search\n"<<"Press 2 For Exit"<<endl;    
     cin>>case1;
-    
+    int p=0;
+   while(word[p]!="")
+   {
+    word[p++]="";
+   } 
     
  if(case1==1)
- {  
+ { 
   int case2;
   cout<<"Press 1 For Boolean Query\n"<<"Press 2 For Phrase Query"<<endl;    
   cin>>case2;
@@ -374,7 +387,7 @@ while(1)
     n=0;
     divide(inputString);
     int p=0,q=0;
-    long int* P[15];
+    pair<long int,long int> *P[15];
     while(word[p]!="")
     {
         if(word[p]=="NOT")
@@ -409,9 +422,9 @@ while(1)
     }
     int t=0;
     cout<<"Documents retrieve after Query :"<<endl;
-    while(*(P[0]+t)!=0)
+    while((*(P[0]+t)).first!=0)
     {
-      cout<<*(P[0]+t)<<",";
+      cout<<"("<<(*(P[0]+t)).first<<","<<(*(P[0]+t)).second<<")"<<" ";
       t++;
     }
     cout<<endl;
@@ -428,7 +441,7 @@ while(1)
          inputString=s1;
          parse(inputString);
          int f=1;
-         long int *P[2];
+         pair<long int,long int> *P[2];
          if(word[0]!="")
          P[0]=posting_ret(word[0]);
          
@@ -441,13 +454,13 @@ while(1)
          
          int t=0;
          cout<<"Documents retrieve after Query :"<<endl;
-         while(*(P[0]+t)!=0)
+         while((*(P[0]+t)).first!=0)
          {
-            cout<<*(P[0]+t)<<",";
+            cout<<"("<<(*(P[0]+t)).first<<","<<(*(P[0]+t)).second<<" ";
              t++;
          }
          cout<<endl;
-                                                     
+                                                             
     
     }
  }

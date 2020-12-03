@@ -4,13 +4,13 @@
 using namespace std;
  
 int main()
-{   
-    pair<long int, long int> pair[10];
-    //pair=()calloc(10,sizeof(long int));
-    //pair[0].first=2;
-    //pair[0].second=2;
-    cout << pair[0].first << " ";
-    cout << pair[0].second << endl;
+{   //long int *pair1;
+    pair<int, int> *pair2;
+    pair2=(pair<int,int> *)calloc(10,sizeof(pair<int,int>));
+    (*pair2).first=2;
+    (*pair2).second=2;
+    cout << ((*(pair2)).first) << " ";
+    cout << pair2[0].second << endl;
  
     return 0;
 }

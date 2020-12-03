@@ -354,7 +354,11 @@ while(1)
     int case1;
     cout<<"Press 1 For Search\n"<<"Press 2 For Exit"<<endl;    
     cin>>case1;
-    
+      int p=0;
+   while(word[p]!="")
+   {
+    word[p++]="";
+   } 
     
  if(case1==1)
  {  
